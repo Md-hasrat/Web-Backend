@@ -61,7 +61,7 @@ userSchema.pre("save", async function (next){
 
 // Compare the bcrypted password to the user password from database during the login
 userSchema.methods.isPasswordCorrect = async function(password) {
-    return await bcrypt.compare(password,this.p)
+    return await bcrypt.compare(password,this.password)
 }
 
 // After a user successfully logs in, this method is used to generate a JWT. 
