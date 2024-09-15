@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
+import mongoose, {Schema} from "mongoose";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
 const userSchema = new Schema(
     {
@@ -9,64 +9,62 @@ const userSchema = new Schema(
             required: true,
             unique: true,
             lowercase: true,
-            trim: true,
+            trim: true, 
             index: true
         },
         email: {
             type: String,
             required: true,
             unique: true,
-            lowercase: true,
-            trim: true,
+            lowecase: true,
+            trim: true, 
         },
         fullName: {
             type: String,
             required: true,
-            trim: true,
+            trim: true, 
             index: true
         },
         avatar: {
-            type: String, // cloudinary link used
+            type: String, // cloudinary url
             required: true,
         },
         coverImage: {
-            type: String,
+            type: String, // cloudinary url
         },
         watchHistory: [
             {
                 type: Schema.Types.ObjectId,
-                ref: "video"
+                ref: "Video"
             }
         ],
         password: {
             type: String,
-            required: [true, "Password is reuired"],
+            required: [true, 'Password is required']
         },
         refreshToken: {
             type: String
         }
+
     },
     {
         timestamps: true
     }
 )
 
-// bcrypt the possword 
-userSchema.pre("save", async function (next){
+userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-// Compare the bcrypted password to the user password from database during the login
-userSchema.methods.isPasswordCorrect = async function(password) {
-    return await bcrypt.compare(password,this.password)
+userSchema.methods.isPasswordCorrect = async function(password){
+    return await bcrypt.compare(password, this.password)
 }
 
-// After a user successfully logs in, this method is used to generate a JWT. 
-userSchema.methods.generateAccessToekn = function(){
-   return jwt.sign(
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -75,18 +73,17 @@ userSchema.methods.generateAccessToekn = function(){
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRE
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 }
-
-// When an access token expires, the client can use the refresh token to request a new access token without needing to log in again. This maintains user session continuity.
-userSchema.methods.generateRefreshToekn = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
-            _id: this._id
+            _id: this._id,
+            
         },
-        process.env.REFRESH_TOKEN_SECRETE,
+        process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
